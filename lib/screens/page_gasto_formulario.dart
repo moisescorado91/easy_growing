@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:easy_growing/models/gasto.dart';
 import 'package:easy_growing/services/gasto_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AgregarGastoScreen extends StatefulWidget {
   final Gasto? gasto; // Añadimos este parámetro
@@ -8,7 +9,7 @@ class AgregarGastoScreen extends StatefulWidget {
   const AgregarGastoScreen({
     super.key,
     this.gasto,
-  }); // Constructor con gasto opcional
+  });
 
   @override
   // ignore: library_private_types_in_public_api
@@ -67,6 +68,10 @@ class _AgregarGastoScreenState extends State<AgregarGastoScreen> {
     if (_formKey.currentState!.validate()) {
       final descripcion = _descripcionController.text;
       final monto = double.tryParse(_montoController.text) ?? 0;
+      final prefs = await SharedPreferences.getInstance();
+      int? usuarioId = prefs.getInt('usuarioId');
+
+      print("id_usuario" + usuarioId.toString());
 
       // Si estamos editando, usamos editarGasto(), de lo contrario usamos agregarGasto()
       if (isEdit) {
@@ -76,6 +81,7 @@ class _AgregarGastoScreenState extends State<AgregarGastoScreen> {
           categoria: _categoriaSeleccionada,
           monto: monto,
           fecha: _fechaSeleccionada.toString().split(' ')[0],
+          idUsuario: usuarioId!,
         );
 
         await _gastoService.editarGasto(nuevoGasto); // Edita el gasto
@@ -92,6 +98,7 @@ class _AgregarGastoScreenState extends State<AgregarGastoScreen> {
           categoria: _categoriaSeleccionada,
           monto: monto,
           fecha: _fechaSeleccionada.toString().split(' ')[0],
+          idUsuario: usuarioId!,
         );
         // Si es nuevo gasto, usamos agregar
         await _gastoService.agregarGasto(nuevoGasto); // Agrega el nuevo gasto

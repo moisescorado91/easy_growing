@@ -1,5 +1,6 @@
 import 'package:easy_growing/db/database_helper.dart';
 import 'package:easy_growing/models/usuario.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 // creamos un servicio que consuma todas las operaciones sobre la tabla usuarios
 class UsuarioService {
@@ -37,18 +38,30 @@ class UsuarioService {
 
   // Método que valida las credenciales
   Future<Usuario?> validarUsuario(String username, String password) async {
-    // Consultamos el usuario directamente por el nombre de usuario y la contraseña
     final usuarioMap = await DatabaseHelper.instance.queryUsuarioByCredentials(
       username,
       password,
     );
 
-    // Si encontramos un usuario, lo retornamos
     if (usuarioMap != null) {
       return Usuario.fromMap(usuarioMap);
     }
+    return null;
+  }
 
-    // Si no se encuentra, retornamos null
+  Future<Usuario?> obtenerPerfil() async {
+    final prefs = await SharedPreferences.getInstance();
+    int? usuarioId = prefs.getInt('usuarioId');
+    if (usuarioId == null) {
+      return null;
+    }
+
+    final usuarioMap = await DatabaseHelper.instance.queryUsuarioById(
+      usuarioId,
+    );
+    if (usuarioMap != null) {
+      return Usuario.fromMap(usuarioMap);
+    }
     return null;
   }
 }

@@ -1,3 +1,7 @@
+import 'package:easy_growing/screens/goal_screen.dart';
+import 'package:easy_growing/screens/screen_grafic.dart';
+import 'package:easy_growing/screens/screen_perfil.dart';
+import 'package:easy_growing/services/goal_service.dart';
 import 'package:flutter/material.dart';
 import 'package:easy_growing/screens/page_gasto_formulario.dart';
 import 'package:easy_growing/services/gasto_service.dart';
@@ -14,6 +18,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   final GastoService _gastoService = GastoService();
+  final GoalService _goalService = GoalService();
 
   List<Gasto> _gastos = [];
 
@@ -25,7 +30,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future<void> _cargarGastos() async {
     final gastos = await _gastoService.obtenerGastos();
- 
+    print(gastos);
 
     setState(() {
       _gastos = gastos;
@@ -80,64 +85,22 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(widget.title)),
-
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: <Widget>[
-            Container(
-              height: 200, 
-              decoration: BoxDecoration(
-                image: DecorationImage(
-                  image: AssetImage(
-                    "assets/images/logo.jpg",
-                  ), 
-                  fit: BoxFit.cover,
-                ),
-              ),
-              child: const DrawerHeader(
-                decoration: BoxDecoration(
-                  color:
-                      Colors
-                          .black45, 
-                ),
-                child: Text(
-                  'Menú',
-                  style: TextStyle(color: Colors.white, fontSize: 24),
-                ),
-              ),
-            ),
-            ListTile(
-              leading: const Icon(Icons.home),
-              title: const Text('Gastos'),
-              onTap: () {
-                Navigator.pop(context); 
-                ScaffoldMessenger.of(
-                  context,
-                ).showSnackBar(SnackBar(content: Text("Redirigir a gastos")));
-                Navigator.pushReplacementNamed(context, '/gastos');
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.insert_chart),
-              title: const Text('Gráfico'),
-              onTap: () {
-                Navigator.pop(context);
-                ScaffoldMessenger.of(
-                  context,
-                ).showSnackBar(SnackBar(content: Text("Redirigir a gráfico")));
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.exit_to_app),
-              title: const Text('Cerrar sesión'),
-              onTap: () {
-                Navigator.pushReplacementNamed(context, '/');
-              },
-            ),
-          ],
+      appBar: AppBar(
+        leading: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Image.asset('assets/images/logo.jpg', height: 40),
         ),
+        title: const Text('Mis Gastos'),
+        centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.exit_to_app),
+            onPressed: () {
+              Navigator.pushReplacementNamed(context, '/');
+            },
+            tooltip: 'Salir',
+          ),
+        ],
       ),
       body:
           _gastos.isEmpty
@@ -183,6 +146,60 @@ class _MyHomePageState extends State<MyHomePage> {
                   );
                 },
               ),
+      bottomNavigationBar: BottomAppBar(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            IconButton(
+              icon: const Icon(Icons.star_outline),
+              onPressed: () async {
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => GoalScreen(goalService: _goalService),
+                  ),
+                );
+              },
+              tooltip: 'Metas',
+            ),
+
+            // se quito esto los requerimientos solicitan informacion basada en otro tipo de boton
+            // IconButton(
+            //   icon: const Icon(Icons.add),
+            //   onPressed: () async {
+            //     await Navigator.push(
+            //       context,
+            //       MaterialPageRoute(builder: (_) => const AgregarGastoScreen()),
+            //     );
+            //     _cargarGastos();
+            //   },
+            //   tooltip: 'Agregar',
+            // ),
+            IconButton(
+              icon: const Icon(Icons.bar_chart),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => ScreenGrafic(gastoService: _gastoService),
+                  ),
+                );
+              },
+              tooltip: 'Gráficos',
+            ),
+            IconButton(
+              icon: const Icon(Icons.person), // icono de perfil
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => ScreenPerfil()),
+                );
+              },
+              tooltip: 'Perfil',
+            ),
+          ],
+        ),
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
           await Navigator.push(

@@ -1,6 +1,7 @@
 import 'package:easy_growing/models/gasto.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class GastoService {
   static Database? _database;
@@ -23,7 +24,8 @@ class GastoService {
           descripcion TEXT,
           categoria TEXT,
           monto REAL,
-          fecha TEXT
+          fecha TEXT,
+          id_usuario   INTEGER
         )
       ''');
       },
@@ -31,7 +33,7 @@ class GastoService {
   }
 
   //  todas las operaciones del crud
-  
+
   Future<int> agregarGasto(Gasto gasto) async {
     final db = await database;
     return await db.insert('gastos', gasto.toMap());
@@ -56,11 +58,39 @@ class GastoService {
   }
 
   Future<List<Gasto>> obtenerGastos() async {
+    final prefs = await SharedPreferences.getInstance();
+    int? usuarioId = prefs.getInt('usuarioId');
+
+    if (usuarioId == null) {
+      return [];
+    }
+
     final db = await database;
-    final List<Map<String, dynamic>> maps = await db.query('gastos');
+
+    // filtramos por el id del usuario
+    final List<Map<String, dynamic>> maps = await db.query(
+      'gastos',
+      where: 'id_usuario = ?',
+      whereArgs: [usuarioId],
+    );
 
     return List.generate(maps.length, (i) {
       return Gasto.fromMap(maps[i]);
     });
+  }
+
+  Future<List<Map<String, dynamic>>> obtenerMontosPorCategoria() async {
+    final prefs = await SharedPreferences.getInstance();
+    int? usuarioId = prefs.getInt('usuarioId');
+    final db = await database;
+
+    if (usuarioId == null) {
+      return [];
+    }
+
+    return await db.rawQuery(
+      'SELECT categoria, SUM(monto) as total FROM gastos WHERE id_usuario = ? GROUP BY categoria',
+      [usuarioId],
+    );
   }
 }

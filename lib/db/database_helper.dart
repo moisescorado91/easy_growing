@@ -15,6 +15,7 @@ class DatabaseHelper {
   static final columnCategoria = 'categoria';
   static final columnMonto = 'monto';
   static final columnFecha = 'fecha';
+  static final columnGastoUsuarioId = 'id_usuario';
 
   // Columnas para  usuarios
   static final columnUsuarioId = 'id';
@@ -52,7 +53,9 @@ class DatabaseHelper {
         $columnDescripcion TEXT NOT NULL,
         $columnCategoria TEXT NOT NULL,
         $columnMonto REAL NOT NULL,
-        $columnFecha TEXT NOT NULL
+        $columnFecha TEXT NOT NULL,
+        $columnGastoUsuarioId INTEGER,
+        FOREIGN KEY ($columnGastoUsuarioId) REFERENCES $tableUsuario ($columnUsuarioId)
       )
     ''');
 
@@ -69,6 +72,26 @@ class DatabaseHelper {
     await db.insert(tableUsuario, {
       columnNombre: 'developer',
       columnCorreo: 'developer',
+    }, conflictAlgorithm: ConflictAlgorithm.replace);
+    await db.insert(tableUsuario, {
+      columnNombre: 'moises',
+      columnCorreo: 'moises',
+    }, conflictAlgorithm: ConflictAlgorithm.replace);
+    await db.insert(tableUsuario, {
+      columnNombre: 'jose',
+      columnCorreo: 'jose',
+    }, conflictAlgorithm: ConflictAlgorithm.replace);
+    await db.insert(tableUsuario, {
+      columnNombre: 'lina',
+      columnCorreo: 'lina',
+    }, conflictAlgorithm: ConflictAlgorithm.replace);
+    await db.insert(tableUsuario, {
+      columnNombre: 'alexandra',
+      columnCorreo: 'alexandra',
+    }, conflictAlgorithm: ConflictAlgorithm.replace);
+    await db.insert(tableUsuario, {
+      columnNombre: 'luis',
+      columnCorreo: 'luis',
     }, conflictAlgorithm: ConflictAlgorithm.replace);
   }
 

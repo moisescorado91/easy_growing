@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:easy_growing/services/usuario_service.dart';
-
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -24,7 +24,13 @@ class _LoginScreenState extends State<LoginScreen> {
     // Llamamos al servicio para validar las credenciales
     final usuario = await _usuarioService.validarUsuario(username, password);
 
+    // devuelve
+    // I/flutter (16880): Usuario(id: 1, usuario: developer, password: developer)
+    print(usuario);
     if (usuario != null) {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setInt('usuarioId', usuario.id!);
+
       // Si el usuario es válido, redirigimos a la pantalla de gastos
       Navigator.pushReplacementNamed(context, '/gastos');
     } else {
