@@ -1,4 +1,4 @@
-
+// App Easy Growing: Control y registro de gastos personales
 import 'package:flutter/material.dart';
 import 'package:easy_growing/screens/login_screen.dart';
 import 'package:easy_growing/screens/page_gasto.dart';
@@ -13,7 +13,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Control de Gastos',
+      title: 'Easy Growing - Control de Gastos',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
         useMaterial3: true,
