@@ -20,6 +20,14 @@ class _MyHomePageState extends State<MyHomePage> {
   final GastoService _gastoService = GastoService();
   final GoalService _goalService = GoalService();
 
+  // Paleta de colores
+  final Color _primaryColor = const Color(0xFF295773);
+  final Color _lightBackground = const Color(0xFFCBD7E4);
+  final Color _secondaryColor = const Color(0xFFF3EBF3);
+  final Color _darkAccent = const Color(0xFF295D7D);
+  final Color _successColor = const Color(0xFF7AAC6C);
+  final Color _errorColor = const Color(0xFFD32F2F);
+
   List<Gasto> _gastos = [];
 
   @override
@@ -30,8 +38,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future<void> _cargarGastos() async {
     final gastos = await _gastoService.obtenerGastos();
-    print(gastos);
-
     setState(() {
       _gastos = gastos;
     });
@@ -42,18 +48,22 @@ class _MyHomePageState extends State<MyHomePage> {
       context: context,
       builder:
           (context) => AlertDialog(
-            title: const Text('Confirmación'),
-            content: const Text(
+            backgroundColor: _secondaryColor,
+            title: Text('Confirmación', style: TextStyle(color: _primaryColor)),
+            content: Text(
               '¿Estás seguro de que quieres eliminar este gasto?',
+              style: TextStyle(color: _darkAccent),
             ),
             actions: [
               TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: const Text('Cancelar'),
+                onPressed: () => Navigator.of(context).pop(),
+                child: Text('Cancelar', style: TextStyle(color: _primaryColor)),
               ),
-              TextButton(
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _errorColor,
+                  foregroundColor: Colors.white,
+                ),
                 onPressed: () {
                   _eliminarGasto(id);
                   Navigator.of(context).pop();
@@ -67,10 +77,16 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future<void> _eliminarGasto(int id) async {
     await _gastoService.eliminarGasto(id);
-
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Gasto eliminado')));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text(
+          'Gasto eliminado',
+          style: TextStyle(color: Colors.white),
+        ),
+        backgroundColor: _errorColor,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
     _cargarGastos();
   }
 
@@ -85,26 +101,43 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: _lightBackground,
+      // backgroundColor: _lightBackground,
       appBar: AppBar(
+        backgroundColor: _primaryColor,
+        foregroundColor: Colors.white,
         leading: Padding(
           padding: const EdgeInsets.all(8.0),
-          child: Image.asset('assets/images/logo.jpg', height: 40),
+          child: Image.asset('assets/images/easy.png', height: 120),
         ),
-        title: const Text('Mis Gastos'),
+        title: const Text(
+          'Mis Gastos',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         centerTitle: true,
         actions: [
           IconButton(
             icon: const Icon(Icons.exit_to_app),
-            onPressed: () {
-              Navigator.pushReplacementNamed(context, '/');
-            },
+            onPressed: () => Navigator.pushReplacementNamed(context, '/'),
             tooltip: 'Salir',
           ),
         ],
       ),
       body:
           _gastos.isEmpty
-              ? const Center(child: Text("No hay gastos registrados."))
+              ? Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.money_off, size: 50, color: _darkAccent),
+                    const SizedBox(height: 16),
+                    Text(
+                      "No hay gastos registrados",
+                      style: TextStyle(fontSize: 18, color: _darkAccent),
+                    ),
+                  ],
+                ),
+              )
               : ListView.builder(
                 itemCount: _gastos.length,
                 itemBuilder: (context, index) {
@@ -114,17 +147,32 @@ class _MyHomePageState extends State<MyHomePage> {
                       horizontal: 10,
                       vertical: 6,
                     ),
+                    color: _secondaryColor,
+                    elevation: 1,
                     child: ListTile(
-                      title: Text(gasto.descripcion),
+                      title: Text(
+                        gasto.descripcion,
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: _darkAccent,
+                        ),
+                      ),
                       subtitle: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            '${gasto.id} ${gasto.categoria} • ${gasto.fecha}',
+                            '${gasto.categoria} • ${gasto.fecha}',
+                            style: TextStyle(
+                              color: _darkAccent.withOpacity(0.7),
+                            ),
                           ),
                           Text(
                             '\$${gasto.monto.toStringAsFixed(2)}',
-                            style: TextStyle(fontWeight: FontWeight.bold),
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: _primaryColor,
+                              fontSize: 16,
+                            ),
                           ),
                         ],
                       ),
@@ -132,11 +180,11 @@ class _MyHomePageState extends State<MyHomePage> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           IconButton(
-                            icon: const Icon(Icons.edit),
+                            icon: Icon(Icons.edit, color: _primaryColor),
                             onPressed: () => _editarGasto(gasto),
                           ),
                           IconButton(
-                            icon: const Icon(Icons.delete),
+                            icon: Icon(Icons.delete, color: _errorColor),
                             onPressed: () => _confirmarEliminacion(gasto.id!),
                           ),
                         ],
@@ -147,11 +195,14 @@ class _MyHomePageState extends State<MyHomePage> {
                 },
               ),
       bottomNavigationBar: BottomAppBar(
+        height: 70,
+        color: _primaryColor,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             IconButton(
-              icon: const Icon(Icons.star_outline),
+              icon: const Icon(Icons.star_outline, size: 30),
+              color: Colors.white,
               onPressed: () async {
                 await Navigator.push(
                   context,
@@ -162,21 +213,9 @@ class _MyHomePageState extends State<MyHomePage> {
               },
               tooltip: 'Metas',
             ),
-
-            // se quito esto los requerimientos solicitan informacion basada en otro tipo de boton
-            // IconButton(
-            //   icon: const Icon(Icons.add),
-            //   onPressed: () async {
-            //     await Navigator.push(
-            //       context,
-            //       MaterialPageRoute(builder: (_) => const AgregarGastoScreen()),
-            //     );
-            //     _cargarGastos();
-            //   },
-            //   tooltip: 'Agregar',
-            // ),
             IconButton(
-              icon: const Icon(Icons.bar_chart),
+              icon: const Icon(Icons.bar_chart, size: 30),
+              color: Colors.white,
               onPressed: () {
                 Navigator.push(
                   context,
@@ -188,7 +227,8 @@ class _MyHomePageState extends State<MyHomePage> {
               tooltip: 'Gráficos',
             ),
             IconButton(
-              icon: const Icon(Icons.person), // icono de perfil
+              icon: const Icon(Icons.person, size: 30),
+              color: Colors.white,
               onPressed: () {
                 Navigator.push(
                   context,
@@ -201,6 +241,8 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
+        backgroundColor: _successColor,
+        foregroundColor: Colors.white,
         onPressed: () async {
           await Navigator.push(
             context,

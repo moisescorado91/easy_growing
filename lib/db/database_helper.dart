@@ -170,14 +170,31 @@ class DatabaseHelper {
   }
 
   // Actualizar usuario
+  // Future<int> updateUsuario(Map<String, dynamic> row) async {
+  //   Database db = await instance.database;
+  //   int id = row[columnUsuarioId];
+  //   return await db.update(
+  //     tableUsuario,
+  //     row,
+  //     where: '$columnUsuarioId = ?',
+  //     whereArgs: [id],
+  //   );
+  // }
   Future<int> updateUsuario(Map<String, dynamic> row) async {
-    Database db = await instance.database;
-    int id = row[columnUsuarioId];
-    return await db.update(
-      tableUsuario,
-      row,
-      where: '$columnUsuarioId = ?',
-      whereArgs: [id],
+    final db = await instance.database;
+
+    final int? id = row[columnUsuarioId];
+    if (id == null) {
+      throw Exception('ID del usuario no puede ser null. row: $row');
+    }
+
+    return await db.rawUpdate(
+      '''
+    UPDATE $tableUsuario
+    SET $columnNombre = ?, $columnCorreo = ?
+    WHERE $columnUsuarioId = ?
+    ''',
+      [row[columnNombre], row[columnCorreo], id],
     );
   }
 

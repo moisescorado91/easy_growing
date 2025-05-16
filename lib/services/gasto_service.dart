@@ -41,8 +41,6 @@ class GastoService {
 
   // Función para editar un gasto
   Future<int> editarGasto(Gasto gasto) async {
-    print("info llego");
-    print(gasto);
     final db = await database;
     return await db.update(
       'gastos',

@@ -12,18 +12,16 @@ class Usuario {
 
   factory Usuario.fromMap(Map<String, dynamic> map) {
     return Usuario(
-      id: map['id'],
-      usuario: map['usuario'],
-      password: map['password'],
+      id: map['id'] != null ? map['id'] as int : null,
+      usuario: map['usuario'] as String,
+      password: map['password'] as String,
     );
   }
 
   Map<String, dynamic> toMap() {
-    return {
-      'usuario': usuario,
-      'password': password,
-    };
+    return {'id': id, 'usuario': usuario, 'password': password};
   }
+
   @override
   String toString() {
     return 'Usuario(id: $id, usuario: $usuario, password: $password)';

@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:easy_growing/screens/login_screen.dart';
 import 'package:easy_growing/screens/page_gasto.dart';
@@ -14,14 +13,15 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Control de Gastos',
-      theme: ThemeData(
+      theme: 
+      ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
         useMaterial3: true,
       ),
-      initialRoute: '/', 
+      initialRoute: '/',
       routes: {
-        '/': (context) => const LoginScreen(), 
-        '/gastos': (context) => const MyHomePage(title: 'Mis Gastos'), 
+        '/': (context) => const LoginScreen(),
+        '/gastos': (context) => const MyHomePage(title: 'Mis Gastos'),
       },
     );
   }

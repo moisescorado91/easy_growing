@@ -4,7 +4,7 @@ import 'package:easy_growing/services/gasto_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AgregarGastoScreen extends StatefulWidget {
-  final Gasto? gasto; // Añadimos este parámetro
+  final Gasto? gasto;
 
   const AgregarGastoScreen({
     super.key,
@@ -12,7 +12,6 @@ class AgregarGastoScreen extends StatefulWidget {
   });
 
   @override
-  // ignore: library_private_types_in_public_api
   _AgregarGastoScreenState createState() => _AgregarGastoScreenState();
 }
 
@@ -24,6 +23,14 @@ class _AgregarGastoScreenState extends State<AgregarGastoScreen> {
   DateTime _fechaSeleccionada = DateTime.now();
   late bool isEdit = false;
   int? idGasto;
+
+  // Paleta de colores
+  final Color _primaryColor = const Color(0xFF295773);
+  final Color _lightBackground = const Color(0xFFCBD7E4);
+  final Color _secondaryColor = const Color(0xFFF3EBF3);
+  final Color _darkAccent = const Color(0xFF295D7D);
+  final Color _successColor = const Color(0xFF7AAC6C);
+
   final List<String> _categorias = [
     'Alimentación',
     'Transporte',
@@ -36,13 +43,11 @@ class _AgregarGastoScreenState extends State<AgregarGastoScreen> {
   void initState() {
     super.initState();
     if (widget.gasto != null) {
-      // Si estamos editando un gasto, inicializamos los campos con los valores existentes
       idGasto = widget.gasto!.id;
       _descripcionController.text = widget.gasto!.descripcion;
       _montoController.text = widget.gasto!.monto.toString();
       _categoriaSeleccionada = widget.gasto!.categoria;
       _fechaSeleccionada = DateTime.parse(widget.gasto!.fecha);
-
       isEdit = widget.gasto != null;
     }
   }
@@ -55,6 +60,18 @@ class _AgregarGastoScreenState extends State<AgregarGastoScreen> {
       initialDate: _fechaSeleccionada,
       firstDate: DateTime(2020),
       lastDate: DateTime(2100),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: ColorScheme.light(
+              primary: _primaryColor,
+              onPrimary: Colors.white,
+              onSurface: _darkAccent,
+            ),
+          ),
+          child: child!,
+        );
+      },
     );
 
     if (nuevaFecha != null) {
@@ -71,9 +88,6 @@ class _AgregarGastoScreenState extends State<AgregarGastoScreen> {
       final prefs = await SharedPreferences.getInstance();
       int? usuarioId = prefs.getInt('usuarioId');
 
-      print("id_usuario" + usuarioId.toString());
-
-      // Si estamos editando, usamos editarGasto(), de lo contrario usamos agregarGasto()
       if (isEdit) {
         final nuevoGasto = Gasto(
           id: idGasto,
@@ -84,12 +98,15 @@ class _AgregarGastoScreenState extends State<AgregarGastoScreen> {
           idUsuario: usuarioId!,
         );
 
-        await _gastoService.editarGasto(nuevoGasto); // Edita el gasto
+        await _gastoService.editarGasto(nuevoGasto);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
               'Gasto actualizado: ${nuevoGasto.descripcion} - \$${monto.toStringAsFixed(2)}',
+              style: TextStyle(color: Colors.white),
             ),
+            backgroundColor: _successColor,
+            behavior: SnackBarBehavior.floating,
           ),
         );
       } else {
@@ -100,90 +117,140 @@ class _AgregarGastoScreenState extends State<AgregarGastoScreen> {
           fecha: _fechaSeleccionada.toString().split(' ')[0],
           idUsuario: usuarioId!,
         );
-        // Si es nuevo gasto, usamos agregar
-        await _gastoService.agregarGasto(nuevoGasto); // Agrega el nuevo gasto
+        
+        await _gastoService.agregarGasto(nuevoGasto);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
               'Gasto agregado: ${nuevoGasto.descripcion} - \$${monto.toStringAsFixed(2)}',
+              style: TextStyle(color: Colors.white),
             ),
+            backgroundColor: _successColor,
+            behavior: SnackBarBehavior.floating,
           ),
         );
       }
 
-      Navigator.pop(
-        context,
-      ); // Cierra la pantalla después de agregar o editar el gasto
+      Navigator.pop(context);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(isEdit ? 'Editar gasto' : 'Agregar gasto')),
+      backgroundColor: _lightBackground,
+      appBar: AppBar(
+        title: Text(isEdit ? 'Editar gasto' : 'Agregar gasto'),
+        backgroundColor: _primaryColor,
+        foregroundColor: Colors.white,
+        elevation: 0,
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: ListView(
-            children: [
-              TextFormField(
-                controller: _descripcionController,
-                decoration: const InputDecoration(labelText: 'Descripción'),
-                validator:
-                    (value) =>
-                        value == null || value.isEmpty
-                            ? 'Campo requerido'
-                            : null,
-              ),
-              TextFormField(
-                controller: _montoController,
-                decoration: const InputDecoration(labelText: 'Monto'),
-                keyboardType: TextInputType.numberWithOptions(decimal: true),
-                validator: (value) {
-                  final monto = double.tryParse(value ?? '');
-                  if (monto == null || monto <= 0) {
-                    return 'Ingrese un monto válido';
-                  }
-                  return null;
-                },
-              ),
-              DropdownButtonFormField<String>(
-                value: _categoriaSeleccionada,
-                items:
-                    _categorias
-                        .map(
-                          (cat) =>
-                              DropdownMenuItem(value: cat, child: Text(cat)),
-                        )
-                        .toList(),
-                onChanged: (value) {
-                  setState(() {
-                    _categoriaSeleccionada = value!;
-                  });
-                },
-                decoration: const InputDecoration(labelText: 'Categoría'),
-              ),
-              const SizedBox(height: 16),
-              Row(
+        child: Card(
+          color: _secondaryColor,
+          elevation: 2,
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Form(
+              key: _formKey,
+              child: ListView(
+                shrinkWrap: true,
                 children: [
-                  Expanded(
-                    child: Text(
-                      'Fecha: ${_fechaSeleccionada.toString().split(' ')[0]}',
+                  TextFormField(
+                    controller: _descripcionController,
+                    decoration: InputDecoration(
+                      labelText: 'Descripción',
+                      labelStyle: TextStyle(color: _primaryColor),
+                      focusedBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(color: _primaryColor),
+                      ),
                     ),
+                    validator: (value) =>
+                        value == null || value.isEmpty ? 'Campo requerido' : null,
                   ),
-                  TextButton(
-                    onPressed: _seleccionarFecha,
-                    child: const Text('Seleccionar fecha'),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _montoController,
+                    decoration: InputDecoration(
+                      labelText: 'Monto',
+                      labelStyle: TextStyle(color: _primaryColor),
+                      prefixText: '\$ ',
+                      prefixStyle: TextStyle(color: _primaryColor),
+                      focusedBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(color: _primaryColor),
+                      ),
+                    ),
+                    keyboardType: TextInputType.numberWithOptions(decimal: true),
+                    validator: (value) {
+                      final monto = double.tryParse(value ?? '');
+                      if (monto == null || monto <= 0) {
+                        return 'Ingrese un monto válido';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  DropdownButtonFormField<String>(
+                    value: _categoriaSeleccionada,
+                    items: _categorias
+                        .map((cat) => DropdownMenuItem(
+                              value: cat,
+                              child: Text(cat, style: TextStyle(color: _darkAccent)),
+                            ))
+                        .toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        _categoriaSeleccionada = value!;
+                      });
+                    },
+                    decoration: InputDecoration(
+                      labelText: 'Categoría',
+                      labelStyle: TextStyle(color: _primaryColor),
+                      enabledBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(color: _primaryColor),
+                      ),
+                    ),
+                    dropdownColor: _secondaryColor,
+                    style: TextStyle(color: _darkAccent),
+                  ),
+                  const SizedBox(height: 24),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'Fecha: ${_fechaSeleccionada.toString().split(' ')[0]}',
+                          style: TextStyle(color: _darkAccent, fontSize: 16),
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: _seleccionarFecha,
+                        child: Text(
+                          'Cambiar fecha',
+                          style: TextStyle(color: _primaryColor),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 32),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: _primaryColor,
+                      foregroundColor: Colors.white,
+                      minimumSize: const Size(double.infinity, 50),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    onPressed: _guardarGasto,
+                    child: Text(
+                      isEdit ? 'Actualizar Gasto' : 'Guardar Gasto',
+                      style: TextStyle(fontSize: 16),
+                    ),
                   ),
                 ],
               ),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: _guardarGasto,
-                child: Text(isEdit ? 'Actualizar Gasto' : 'Guardar Gasto'),
-              ),
-            ],
+            ),
           ),
         ),
       ),
